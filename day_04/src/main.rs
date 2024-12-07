@@ -1,6 +1,5 @@
 #![feature(let_chains)]
 
-mod grid;
 use grid::*;
 
 const PUZZLE_INPUT: &str = include_str!("../puzzle_input.txt");

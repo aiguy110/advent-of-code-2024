@@ -1,4 +1,5 @@
 use std::ops::{Mul, Add, Sub, Index};
+use std::hash::Hash;
 use derive_more::Display;
 
 // Error / Result
@@ -12,17 +13,26 @@ impl std::error::Error for Error {}
 pub type Result<T> = std::result::Result<T, Error>;
 
 // GridVec
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq, Default)]
 pub struct GridVec {
     pub i: i32,
     pub j: i32
 }
 
 impl GridVec {
+    /// Returns a copy of `self` which as been rotated 90 degrees clockwise
     pub fn rot_90(&self) -> GridVec {
         GridVec {
             i: -self.j,
             j: self.i
+        }
+    }
+
+    /// Returns a copy of `self` which as been rotated 90 degrees anti-clockwise
+    pub fn rot_90_anti(&self) -> GridVec {
+        GridVec {
+            i: self.j,
+            j: -self.i
         }
     }
 }
