@@ -37,6 +37,10 @@ fn solve_part_2(input: &str) -> usize {
     let mut vialble_locs = 0;
     for candidate_loc in orig_state.visited_loc_dirs.into_keys() {
         let mut sim_state = parse_state(input);
+        if candidate_loc == sim_state.guard_loc {
+            continue;
+        }
+
         sim_state.obsticle_locs.insert(candidate_loc);
 
         let mut continue_sim = true;
@@ -89,8 +93,8 @@ fn tick(state: &mut State) -> TickOutcome {
         return TickOutcome::Finished;
     }
 
-    // If going straight would put us in an obsticle, we actually need to turn right
-    if state.obsticle_locs.contains(&next_loc) {
+    // If going straight would put us in an obsticle, we need to turn right UNTIL THE WAY IS CLEAR
+    while state.obsticle_locs.contains(&next_loc) {
         state.guard_dir = state.guard_dir.rot_90_anti();
         next_loc = state.guard_loc + state.guard_dir;
     }
