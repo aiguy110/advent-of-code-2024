@@ -46,6 +46,9 @@ mod tests {
 
     #[test]
     fn test_part_1_hard_negative() {
+        // I originally kicked off the recusion with `can_eq(eq.0, 0, &eq.1[..])`
+        // because I didn't think of this case where zeroing the first term can
+        // make the equation solvable when it should not be.
         assert_eq!(solve_part_1("1: 10 1"), 0);
     }
 }
