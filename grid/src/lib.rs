@@ -1,4 +1,5 @@
-use std::ops::{Mul, Add, Sub, Index};
+use std::ops::{Mul, MulAssign, Add, AddAssign, Sub, SubAssign, Index};
+use std::cmp::{PartialOrd, Ord};
 use std::hash::Hash;
 use derive_more::Display;
 
@@ -13,7 +14,7 @@ impl std::error::Error for Error {}
 pub type Result<T> = std::result::Result<T, Error>;
 
 // GridVec
-#[derive(Clone, Copy, Hash, PartialEq, Eq, Default)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Default, Debug)]
 pub struct GridVec {
     pub i: i32,
     pub j: i32
@@ -60,6 +61,12 @@ impl Mul<i32> for GridVec {
     }
 }
 
+impl MulAssign<i32> for GridVec {
+    fn mul_assign(&mut self, rhs: i32) {
+        let _ = std::mem::replace(self, *self * rhs);
+    }
+}
+
 impl Mul<GridVec> for i32 {
     type Output = GridVec;
 
@@ -79,11 +86,23 @@ impl Add for GridVec {
     }
 }
 
+impl AddAssign for GridVec {
+    fn add_assign(&mut self, rhs: Self) {
+        let _ = std::mem::replace(self, *self + rhs);
+    }
+}
+
 impl Sub for GridVec {
     type Output = GridVec;
 
     fn sub(self, rhs: Self) -> Self::Output {
         self + -1*rhs
+    }
+}
+
+impl SubAssign for GridVec {
+    fn sub_assign(&mut self, rhs: Self) {
+        let _ = std::mem::replace(self, *self - rhs);
     }
 }
 
