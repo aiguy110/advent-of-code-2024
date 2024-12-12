@@ -1,53 +1,66 @@
+use std::collections::BTreeMap;
+
 const PUZZLE_INPUT: &str = include_str!("../puzzle_input.txt");
 
 fn main() {
-    println!("Part 1 Answer: {}", solve_part_1(PUZZLE_INPUT));
-    println!("Part 2 Answer: {}", solve_part_2(PUZZLE_INPUT));
+    println!("Part 1 Answer: {}", solve(PUZZLE_INPUT, 25));
+    println!("Part 2 Answer: {}", solve(PUZZLE_INPUT, 75));
 }
 
-fn solve_part_1(input: &str) -> usize {
+fn solve(input: &str, iterations: usize) -> usize {
     let mut state = parse_input(input);
-    for _ in 0..25 {
-        state = tick(&state);
+    for _ in 0..iterations {
+        state = tick(state);
     }
 
-    state.len()
+    state.values().sum()
 }
 
-fn solve_part_2(input: &str) -> usize {
-    let mut state = parse_input(input);
-    for i in 0..75 {
-        println!("Blink #{i}");
-        state = tick(&state);
-    }
+fn parse_input(input: &str) -> BTreeMap<usize, usize> {
+    let mut stone_counts = BTreeMap::new();
 
-    state.len()
-}
-
-fn parse_input(input: &str) -> Vec<usize> {
-    input.trim()
+    for n in input.trim()
         .split_whitespace()
-        .map(|n| n.parse().unwrap())
-        .collect()
+        .map(|s| s.parse().unwrap()) 
+    {
+        if let Some(c) = stone_counts.get_mut(&n) {
+            *c += 1;
+        } else {
+            stone_counts.insert(n, 1);
+        }
+    }
+
+    stone_counts
 }
 
-fn tick(state: &Vec<usize>) -> Vec<usize> {
-    state.iter()
-        .map(|n| {
-            match n {
-                0 => vec![1],
-                m if m.to_string().len() % 2 == 0 => {
-                    let s = m.to_string();
-                    vec![
-                        s[..s.len()/2].parse().unwrap(),
-                        s[s.len()/2..].parse().unwrap()
-                    ]
-                },
-                m => vec![2024*m]
+fn tick(state: BTreeMap<usize, usize>) -> BTreeMap<usize, usize> {
+    let mut new_state = BTreeMap::new(); 
+
+    for num_count in state.into_iter() {
+        match num_count {
+            (0, c) => {
+                add_or_set(1, c, &mut new_state);
+            },
+            (n, c) if n.to_string().len() % 2 == 0 => {
+                let n_str = n.to_string();
+                add_or_set(n_str[..n_str.len()/2].parse().unwrap(), c, &mut new_state);
+                add_or_set(n_str[n_str.len()/2..].parse().unwrap(), c, &mut new_state);
+            },
+            (n, c) => {
+                add_or_set(2024*n, c, &mut new_state);
             }
-        })
-        .flatten()
-        .collect()
+        }
+    }
+
+    new_state
+}
+
+fn add_or_set(key: usize, val: usize, dict: &mut BTreeMap<usize, usize>) {
+    if let Some(v) = dict.get_mut(&key) {
+        *v += val;
+    } else {
+        dict.insert(key, val);
+    }
 }
 
 #[cfg(test)]
@@ -58,11 +71,11 @@ mod tests {
 
     #[test]
     fn test_solve_part_1() {
-        assert_eq!(solve_part_1(TEST_INPUT), 55312);
+        assert_eq!(solve(TEST_INPUT, 25), 55312);
     }
 
     // #[test]
     // fn test_solve_part_2() {
-    //     assert_eq!(solve_part_2(TEST_INPUT), 42);
+    //     assert_eq!(solve(TEST_INPUT, 75), 42);
     // }
 }
