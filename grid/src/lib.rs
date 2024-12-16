@@ -1,7 +1,11 @@
-use std::ops::{Mul, MulAssign, Add, AddAssign, Sub, SubAssign, Index};
+use std::collections::BTreeSet;
+use std::ops::{Mul, MulAssign, Add, AddAssign, Sub, SubAssign, Index, };
 use std::cmp::{PartialOrd, Ord};
 use std::hash::Hash;
 use derive_more::Display;
+
+const ANSI_RESET: &str = "\x1b[0m";
+const ANSI_BRIGHT_BG: &str = "\x1b[1;47m\x1b[1;30m";
 
 // Error / Result
 #[derive(Display, Debug)]
@@ -151,6 +155,26 @@ impl<T> Grid<T> {
         }
 
         Some(&self.rows[loc.i as usize][loc.j as usize])
+    }
+
+}
+
+impl Grid<char> {
+    pub fn render_with_highlights(&self, highlights: &BTreeSet<GridVec>) {
+        for i in 0..self.row_count {
+            for j in 0..self.col_count {
+                let loc = GridVec::from([i, j]);
+                let hl = highlights.contains(&loc);
+                if hl {
+                    print!("{}", ANSI_BRIGHT_BG);
+                }
+                print!("{}", self[loc]);
+                if hl {
+                    print!("{}", ANSI_RESET);
+                }
+            }
+            println!();
+        }
     }
 }
 
