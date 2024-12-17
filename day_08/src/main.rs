@@ -18,8 +18,8 @@ impl TransmitterMap {
     fn is_in_borders(&self, loc: GridVec) -> bool {
         loc.i >= 0
         && loc.j >= 0
-        && loc.i < self.col_count as i32
-        && loc.j < self.col_count as i32
+        && loc.i < self.col_count as i64
+        && loc.j < self.col_count as i64
     }
 
     fn render(&self, antinode_locs: &BTreeSet<GridVec>) {

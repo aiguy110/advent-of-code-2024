@@ -20,8 +20,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 // GridVec
 #[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Default, Debug)]
 pub struct GridVec {
-    pub i: i32,
-    pub j: i32
+    pub i: i64,
+    pub j: i64
 }
 
 impl GridVec {
@@ -44,13 +44,19 @@ impl GridVec {
 
 impl From<[i32; 2]> for GridVec {
     fn from(value: [i32; 2]) -> Self {
+        GridVec { i: value[0] as i64, j: value[1] as i64 }
+    }
+}
+
+impl From<[i64; 2]> for GridVec {
+    fn from(value: [i64; 2]) -> Self {
         GridVec { i: value[0], j: value[1] }
     }
 }
 
 impl From<[usize; 2]> for GridVec {
     fn from(value: [usize; 2]) -> Self {
-        GridVec { i: value[0] as i32, j: value[1] as i32 }
+        GridVec { i: value[0] as i64, j: value[1] as i64 }
     }
 }
 
@@ -59,15 +65,20 @@ impl Mul<i32> for GridVec {
 
     fn mul(self, rhs: i32) -> Self::Output {
         GridVec { 
-            i: self.i * rhs, 
-            j: self.j * rhs
+            i: self.i * rhs as i64, 
+            j: self.j * rhs as i64
         }
     }
 }
 
-impl MulAssign<i32> for GridVec {
-    fn mul_assign(&mut self, rhs: i32) {
-        let _ = std::mem::replace(self, *self * rhs);
+impl Mul<i64> for GridVec {
+    type Output = GridVec;
+
+    fn mul(self, rhs: i64) -> Self::Output {
+        GridVec { 
+            i: self.i * rhs, 
+            j: self.j * rhs
+        }
     }
 }
 
@@ -78,6 +89,27 @@ impl Mul<GridVec> for i32 {
         rhs*self
     }
 }
+
+impl Mul<GridVec> for i64 {
+    type Output = GridVec;
+
+    fn mul(self, rhs: GridVec) -> Self::Output {
+        rhs*self
+    }
+}
+
+impl MulAssign<i32> for GridVec {
+    fn mul_assign(&mut self, rhs: i32) {
+        let _ = std::mem::replace(self, *self * rhs);
+    }
+}
+
+impl MulAssign<i64> for GridVec {
+    fn mul_assign(&mut self, rhs: i64) {
+        let _ = std::mem::replace(self, *self * rhs);
+    }
+}
+
 
 impl Add for GridVec {
     type Output = GridVec;
