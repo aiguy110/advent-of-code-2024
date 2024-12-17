@@ -87,8 +87,8 @@ fn tick(state: &mut State) -> TickOutcome {
     // If going straight takes us off the map, we're done
     if next_loc.i < 0 
         || next_loc.j < 0 
-        || next_loc.i >= state.row_count as i32
-        || next_loc.j >= state.col_count as i32
+        || next_loc.i >= state.row_count as i64
+        || next_loc.j >= state.col_count as i64
     {
         return TickOutcome::Finished;
     }
