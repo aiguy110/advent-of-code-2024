@@ -16,7 +16,7 @@ struct Bot {
 
 fn solve_part_1(input: &str, dims: &[i64; 2]) -> usize {
     let mut bots = parse_input(input);
-    for t in 0..100 {
+    for _ in 0..100 {
         tick(&mut bots, dims);
     }
     calc_safety_factor(&bots, dims)
