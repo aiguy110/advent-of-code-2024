@@ -1,5 +1,5 @@
 use std::collections::BTreeSet;
-use std::ops::{Mul, MulAssign, Add, AddAssign, Sub, SubAssign, Index, };
+use std::ops::{Add, AddAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign };
 use std::cmp::{PartialOrd, Ord};
 use std::hash::Hash;
 use derive_more::Display;
@@ -189,9 +189,39 @@ impl<T> Grid<T> {
         Some(&self.rows[loc.i as usize][loc.j as usize])
     }
 
+    pub fn get_mut(&mut self, loc: GridVec) -> Option<&mut T> {
+        if loc.i < 0
+            || loc.j < 0 
+            || loc.i as usize >= self.row_count 
+            || loc.j as usize >= self.col_count 
+        {
+            return None
+        }
+
+        Some(&mut self.rows[loc.i as usize][loc.j as usize])
+    }
+
 }
 
 impl Grid<char> {
+    pub fn render(&self) {
+        let highlights: BTreeSet<GridVec> = BTreeSet::new();
+        for i in 0..self.row_count {
+            for j in 0..self.col_count {
+                let loc = GridVec::from([i, j]);
+                let hl = highlights.contains(&loc);
+                if hl {
+                    print!("{}", ANSI_BRIGHT_BG);
+                }
+                print!("{}", self[loc]);
+                if hl {
+                    print!("{}", ANSI_RESET);
+                }
+            }
+            println!();
+        }
+    }
+
     pub fn render_with_highlights(&self, highlights: &BTreeSet<GridVec>) {
         for i in 0..self.row_count {
             for j in 0..self.col_count {
@@ -215,5 +245,11 @@ impl<T> Index<GridVec> for Grid<T> {
 
     fn index(&self, index: GridVec) -> &Self::Output {
         self.get(index).unwrap()
+    }
+}
+
+impl<T> IndexMut<GridVec> for Grid<T> {
+    fn index_mut(&mut self, index: GridVec) -> &mut Self::Output {
+        self.get_mut(index).unwrap()
     }
 }
