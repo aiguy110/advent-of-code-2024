@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use grid::{GridVec, Grid};
 
 const PUZZLE_INPUT: &str = include_str!("../puzzle_input.txt");
@@ -18,9 +20,6 @@ fn solve_part_1(input: &str) -> usize {
     let mut bot_loc = find_bot(&grid);
 
     for dir in moves {
-        println!("{:?}", dir);
-        grid.render();
-        println!();
         bot_loc = do_move(&mut grid, bot_loc, dir);
     }
 
@@ -103,7 +102,6 @@ fn do_move(grid: &mut Grid<char>, bot_loc: GridVec, bot_dir: GridVec) -> GridVec
     match locs_to_slide(grid, &vec![bot_loc], bot_dir) {
         None => return bot_loc,
         Some(slide_locs) => {
-            println!("{:?}", slide_locs);
             for loc in slide_locs {
                 grid[loc+bot_dir] = grid[loc];
                 grid[loc] = '.';
@@ -139,40 +137,46 @@ fn locs_to_slide(grid: &Grid<char>, locs: &Vec<GridVec>, dir: GridVec) -> Option
     for &loc in locs.iter() {
         match grid[loc] {
             '#' => return None,
-            'O' | '@' => new_slide_locs.extend(
-                match locs_to_slide(grid, &vec![loc + dir], dir) {
-                    Some(v) => v,
-                    None => return None
-                }),
+            'O' | '@' => new_slide_locs.extend(locs_to_slide(grid, &vec![loc + dir], dir)?),
             '[' => match dir {
                 GridVec {i: 0, j: 1} => {
                     new_slide_locs.push(loc + dir);
-                    new_slide_locs.extend(match locs_to_slide(grid, &vec![loc + 2*dir], dir) { Some(v) => v, None => return None})
+                    new_slide_locs.extend(locs_to_slide(grid, &vec![loc + 2*dir], dir)?)
                 },
                 GridVec {i: 0, j:-1} => {
-                    new_slide_locs.extend(match locs_to_slide(grid, &vec![loc + dir], dir) { Some(v) => v, None => return None})
+                    new_slide_locs.extend(locs_to_slide(grid, &vec![loc + dir], dir)?)
                 },
                 _ /* vertical */ => { 
-                    new_slide_locs.extend(match locs_to_slide(grid, &vec![loc + dir, loc + dir + GridVec::from([0, 1])], dir) { Some(v) => v, None => return None}) 
+                    new_slide_locs.extend(locs_to_slide(grid, &vec![loc + dir, loc + dir + GridVec::from([0, 1])], dir)?);
+                    new_slide_locs.push(loc + GridVec::from([0, 1]));
                 }
             },
             ']' => match dir {
                 GridVec {i: 0, j: 1} => {
-                    new_slide_locs.extend(match locs_to_slide(grid, &vec![loc + dir], dir) { Some(v) => v, None => return None})
+                    new_slide_locs.extend(locs_to_slide(grid, &vec![loc + dir], dir)?)
                 },
                 GridVec {i: 0, j:-1} => {
                     new_slide_locs.push(loc + dir);
-                    new_slide_locs.extend(match locs_to_slide(grid, &vec![loc + 2*dir], dir) { Some(v) => v, None => return None} )
+                    new_slide_locs.extend(locs_to_slide(grid, &vec![loc + 2*dir], dir)?)
                 },
                 _ /* vertical */ => { 
-                    new_slide_locs.extend(match locs_to_slide(grid, &vec![ loc + dir, loc + dir + GridVec::from([0,-1]) ], dir) { Some(v) => v, None => return None})
+                    new_slide_locs.extend(locs_to_slide(grid, &vec![ loc + dir, loc + dir + GridVec::from([0,-1]) ], dir)?);
+                    new_slide_locs.push(loc + GridVec::from([0,-1]));
                 }
             },
             _ => {}
         }
     }
 
-    new_slide_locs.extend_from_slice(&locs[..]);
+    let mut dedupe = BTreeSet::new();
+
+    new_slide_locs = new_slide_locs.into_iter()
+            .chain(locs.iter().map(|l| *l))
+            .filter(|loc| grid[*loc] != '.')
+            .filter(|loc| dedupe.insert(*loc))
+            .collect();
+    new_slide_locs.sort_by_key(|loc| -dir.i * loc.i - dir.j * loc.j);
+
     Some(new_slide_locs)
 }
 
@@ -189,6 +193,6 @@ mod tests {
 
     #[test]
     fn test_solve_part_2() {
-        assert_eq!(solve_part_2(TEST_INPUT), 42);
+        assert_eq!(solve_part_2(TEST_INPUT), 9021);
     }
 }
